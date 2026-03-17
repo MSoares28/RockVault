@@ -1,0 +1,131 @@
+/* ===== Design Tokens ===== */
+:root {
+    --color-bg: #1c1c1e;
+    --color-surface: #2a2a2e;
+    --color-border: #3a3a3e;
+    --color-accent: #7c3aed;
+    --color-accent-hover: #6d28d9;
+    --color-accent-light: #a855f7;
+    --color-text: #f0f0f0;
+    --color-text-muted: #888;
+    --color-input-bg: #1c1c1e;
+    --color-error: #e63946;
+    --color-success: #a855f7;
+
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ===== Reset & Base ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 16px;
+}
+
+/* ===== Container ===== */
+.container {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: var(--shadow);
+}
+
+/* ===== Header ===== */
+h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-accent-light);
+    margin-bottom: 8px;
+}
+
+p {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 32px;
+}
+
+/* ===== Input ===== */
+input[type="text"] {
+    width: 100%;
+    padding: 14px 16px;
+    background-color: var(--color-input-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    color: var(--color-text);
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input[type="text"]:focus {
+    border-color: var(--color-accent);
+}
+
+/* ===== Button ===== */
+button {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--color-accent);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: var(--color-accent-hover);
+}
+
+button:disabled {
+    background-color: var(--color-border);
+    cursor: not-allowed;
+}
+
+/* ===== Status ===== */
+#status {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    min-height: 24px;
+    word-break: break-all;
+}
+
+#status.success {
+    color: var(--color-success);
+}
+
+#status.error {
+    color: var(--color-error);
+}
+
+/* ===== Responsivo ===== */
+@media (max-width: 600px) {
+    .container {
+        padding: 32px 24px;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+    }
+}
