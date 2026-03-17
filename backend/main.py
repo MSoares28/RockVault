@@ -10,6 +10,7 @@ import yt_dlp
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from pathlib import Path
+from fastapi.middleware.cors import CORSMiddleware
 
 # --- App Configuration ---
 
@@ -20,6 +21,13 @@ app = FastAPI(
     title="RockVault API",
     description="Backend API for RockVault — a personal rock music backup tool.",
     version="0.2.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # --- Request Schema ---
