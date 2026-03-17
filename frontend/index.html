@@ -9,10 +9,19 @@
 <body>
     <div class="container">
         <h1>RockVault 🎸</h1>
-        <p>Download rock music from YouTube as MP3</p>
+        <p>Download musics from YouTube as MP3!</p>
 
         <input type="text" id="urlInput" placeholder="Paste YouTube URL here">
         <button id="downloadBtn">Download</button>
+
+        <div class="file-section">
+            <h2>Vault</h2>
+            <ul id="fileList"></ul>
+        </div>
+        
+        <div class="progress-bar-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
 
         <div id="status"></div>
     </div>
