@@ -1,0 +1,15 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# RockVault — never commit downloaded music
+downloads/
+
+# Environment variables
+.env
+
+# OS artifacts
+.DS_Store
+Thumbs.db
