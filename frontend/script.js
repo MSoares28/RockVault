@@ -6,7 +6,7 @@ document.getElementById("downloadBtn").addEventListener("click", function() {
     document.getElementById("status").innerText = "Downloading...";
 
     // 3. Faz a requisição POST para o backend
-    fetch("http://192.168.1.119:8000/download", {
+    fetch("${CONFIG.API_BASE_URL}/download", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
