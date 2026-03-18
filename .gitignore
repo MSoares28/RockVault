@@ -16,3 +16,4 @@ Thumbs.db
 docs/linkedin-plan.md
 frontend/config.js
 *.db
+.env
