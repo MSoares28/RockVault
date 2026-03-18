@@ -5,19 +5,40 @@ This module initializes the FastAPI application, database models,
 and core routes including the MP3 download pipeline and download history.
 """
 
+# ===========================================================================
+# IMPORTS
+# Standard library
+# ===========================================================================
+import os
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 
+# Third-party
 import yt_dlp
-from fastapi import FastAPI, HTTPException
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
-# --- Database Configuration ---
 
+# ===========================================================================
+# ENVIRONMENT
+# Loads .env file and reads the ENVIRONMENT variable.
+# Controls whether API docs are exposed (development only).
+# ===========================================================================
+load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
+
+
+# ===========================================================================
+# DATABASE
+# SQLite database setup using SQLModel.
+# The database file is created automatically on first run.
+# ===========================================================================
 DATABASE_URL = "sqlite:///./rockvault.db"
 engine = create_engine(DATABASE_URL)
 
@@ -41,8 +62,11 @@ def init_db():
     SQLModel.metadata.create_all(engine)
 
 
-# --- App Configuration ---
-
+# ===========================================================================
+# APP
+# FastAPI application instance.
+# docs_url, redoc_url and openapi_url are only active in development.
+# ===========================================================================
 DOWNLOADS_DIR = Path("downloads")
 DOWNLOADS_DIR.mkdir(exist_ok=True)
 
@@ -50,8 +74,17 @@ app = FastAPI(
     title="RockVault API",
     description="Backend API for RockVault — a personal rock music backup tool.",
     version="0.3.0",
+    docs_url="/docs" if ENVIRONMENT == "development" else None,
+    redoc_url="/redoc" if ENVIRONMENT == "development" else None,
+    openapi_url="/openapi.json" if ENVIRONMENT == "development" else None,
 )
 
+
+# ===========================================================================
+# MIDDLEWARE
+# Middleware runs on every request before it reaches any route.
+# Order matters — CORS must be added before custom middleware.
+# ===========================================================================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -61,14 +94,35 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def block_docs_in_production(request: Request, call_next):
+    """
+    Blocks access to API documentation endpoints in production.
+    Even if FastAPI exposes these routes internally, this middleware
+    intercepts the request and returns 404 before it reaches the route.
+    """
+    blocked = ["/docs", "/redoc", "/openapi.json"]
+    if ENVIRONMENT != "development" and request.url.path in blocked:
+        return JSONResponse(status_code=404, content={"detail": "Not found."})
+    return await call_next(request)
+
+
+# ===========================================================================
+# STARTUP
+# Runs once when the server starts.
+# ===========================================================================
 @app.on_event("startup")
 def on_startup():
     """Initializes the database on application startup."""
     init_db()
 
 
-# --- Request Schema ---
-
+# ===========================================================================
+# REQUEST SCHEMAS
+# Pydantic models that define and validate the shape of incoming request data.
+# FastAPI uses these automatically — if the request doesn't match, it returns
+# 422 Unprocessable Entity before the route function even runs.
+# ===========================================================================
 class DownloadRequest(BaseModel):
     """
     Schema for the download endpoint request body.
@@ -79,8 +133,9 @@ class DownloadRequest(BaseModel):
     url: str
 
 
-# --- Routes ---
-
+# ===========================================================================
+# ROUTES
+# ===========================================================================
 @app.get("/health", tags=["System"])
 def health_check():
     """
@@ -108,6 +163,8 @@ def download_mp3(request: DownloadRequest):
 
     Raises:
         HTTPException 400: If yt-dlp fails to process the URL.
+        HTTPException 422: If the URL cannot be extracted.
+        HTTPException 500: If an unexpected error occurs.
     """
     ydl_opts = {
         "format": "bestaudio/best",
@@ -125,13 +182,11 @@ def download_mp3(request: DownloadRequest):
             filename = Path(ydl.prepare_filename(info)).stem + ".mp3"
             file_path = DOWNLOADS_DIR / filename
 
-            # Save record to database
             with Session(engine) as session:
                 record = DownloadRecord(title=filename)
                 session.add(record)
                 session.commit()
 
-            # Serve file and delete after response
             return FileResponse(
                 path=file_path,
                 media_type="audio/mpeg",
@@ -155,9 +210,6 @@ def get_history():
 
     Returns a list of all previously downloaded files from the database,
     ordered by most recent first.
-
-    Returns:
-        A JSON response with the total count and list of download records.
     """
     with Session(engine) as session:
         records = session.exec(

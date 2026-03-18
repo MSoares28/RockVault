@@ -8,6 +8,7 @@ h11==0.16.0
 idna==3.11
 pydantic==2.12.5
 pydantic_core==2.41.5
+python-dotenv==1.2.2
 SQLAlchemy==2.0.48
 sqlmodel==0.0.37
 starlette==0.52.1
